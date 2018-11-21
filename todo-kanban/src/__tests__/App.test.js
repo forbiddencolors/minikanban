@@ -12,11 +12,16 @@ describe('Kanban App', function() {
 	  expect(wrapper.find('.App').length).toEqual(1);
 	});
 
-
-
 	it('should have three columns', () => {
-		const wrapper = shallow(<App />);
 	  expect(wrapper.find( '.kanban-columns')).toHaveLength(3);
+	});
+
+	it('should support drag and drop between columns', () => {
+	  expect(wrapper.find( div)).toHaveLength(0);
+	});
+
+	it('should change task status with column change', () => {
+	  expect(wrapper.find( div)).toHaveLength(0);
 	});
 
 });
