@@ -13,8 +13,12 @@ class App extends Component {
           <div className="kanban-columns todo" >
             <TodoApp />
           </div>
-          <div className="kanban-columns inprogress" />
-          <div className="kanban-columns done" />
+          <div className="kanban-columns inprogress">
+            <TodoApp />
+          </div>
+          <div className="kanban-columns done" >
+            <TodoApp />
+          </div>
         </div>
       </div>
     );
