@@ -1,5 +1,5 @@
 .App {
-  text-align: center;
+
 }
 
 .App-logo {
@@ -29,4 +29,15 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.kanban--board {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+
+}
+
+.kanban-columns {
+  margin: 10px 40px;
 }

@@ -1,0 +1,40 @@
+.list--container {
+	width: 110px;
+}
+
+.list--title {
+	margin-top: 5px;
+	font-weight: bold;
+}
+
+.list--tasks {
+	list-style-type: none;
+	padding: 0;
+}
+
+
+.list--add {
+  background: url(/tab_plus.svg) no-repeat top left;
+  background-size: 30px 30px;
+  fill: #cccccc;
+  width: 30px;
+  height:30px;
+
+}
+
+.list--header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.has-danger {
+	display: none;
+}
+
+.placeholder {
+  background: rgb(255,240,120);
+  &:before {
+    content: "Drop here";
+    color: rgb(225,210,90);
+  }
+}

@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import '../styles/TodoList.css';
 
 export class TodoList extends React.Component {
   render() {
@@ -9,10 +10,11 @@ export class TodoList extends React.Component {
         </li>
       )
     };
+
     return (
-      <ol style={{listStyle: 'lower-greek'}}>
+      <ul className="list--tasks">
         {this.props.items.map(createItem)}
-      </ol>
+      </ul>
     );
   }
 }
@@ -23,11 +25,11 @@ export class TodoApp extends React.Component {
 
     this.state = {
       items: [
-        {id: 1, text: 'item 1', created_at: '2018-11-19'},
-        {id: 2, text: 'item 2', created_at: '2016-11-18'}
+        {id: 1, text: 'item 1 longer', created_at: '2018-11-19'},
+        {id: 2, text: 'item 2 longer description', created_at: '2016-11-18'}
       ],
       text: '',
-      input_empty: false
+      input_empty: true
     }
   }
   onChange = (ev) => {
@@ -36,11 +38,16 @@ export class TodoApp extends React.Component {
       input_empty: !ev.target.value.trim()
     });
   };
+  showAdd = (ev) => {
+    this.setState({
+      input_empty: false
+    });
+  };
   handleSubmit = (ev) => {
-    ev.preventDefault();
-    if (!this.state.text.trim()) {
-      this.setState({input_empty: true});
-      return;
+      ev.preventDefault();
+      if (!this.state.text.trim()) {
+        this.setState({input_empty: true});
+        return;
     }
     
     var nextItems = this.state.items.concat([{
@@ -48,22 +55,23 @@ export class TodoApp extends React.Component {
       text: this.state.text,
       created_at: new Date()
     }]);
-    this.setState({items: nextItems, text: ''});
+    this.setState({items: nextItems, text: '', input_empty: true});
   };
   render() {
     return (
-      <div className='container'>
-        <h3 className='display-1'>Todo</h3>
-        <TodoList items={this.state.items} />
+      <div className='list--container'>
+        <div className="list--header">
+          <div className="list--title">To-Do</div>
+          <div className="list--add" onClick={this.showAdd} ></div>
+        </div>
+        
         <form onSubmit={this.handleSubmit} className={this.state.input_empty ? "form-inline has-danger" : "form-inline"}>
           <div className={'form-group'}>
             <input onChange={this.onChange} value={this.state.text} className='form-control' />
             {' '}
-            <button className='btn btn-primary-outline'>
-              {'Add #' + (this.state.items.length + 1)}
-            </button>
           </div>
         </form>
+        <TodoList items={this.state.items} />
       </div>
     );
   }

@@ -17,11 +17,11 @@ describe('Kanban App', function() {
 	});
 
 	it('should support drag and drop between columns', () => {
-	  expect(wrapper.find( div)).toHaveLength(0);
+	  expect(wrapper.find( 'div')).toHaveLength(0);
 	});
 
 	it('should change task status with column change', () => {
-	  expect(wrapper.find( div)).toHaveLength(0);
+	  expect(wrapper.find( 'div')).toHaveLength(0);
 	});
 
 });
