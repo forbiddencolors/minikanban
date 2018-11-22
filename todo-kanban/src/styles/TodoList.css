@@ -27,9 +27,14 @@
     justify-content: space-between;
 }
 
-.has-danger {
+.form-inline {
 	display: none;
+  ;
 }
+
+.form-inline.add--complete, .form-inline.add--backlog, .form-inline.add--wip {
+  display:block
+} 
 
 .placeholder {
   background: rgb(255,240,120);
@@ -38,3 +43,59 @@
     color: rgb(225,210,90);
   }
 }
+
+.kanbanBoard {
+  display: flex;
+  flex-direction: row;
+  text-align: center;
+
+}
+
+
+
+
+/*from*/
+.App {
+  text-align: center;
+  width: 60%;
+  margin: 15px auto;
+}
+
+.container-drag {
+  /*text-align: center;*/
+}
+
+.wip, .backlog, .complete {
+  width: 250px;
+  height: 100vh;
+  background-color: #EEEEEE;
+  border-right: 1px dotted;
+}
+
+
+.header {
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+  background-color: #E0E0E0;
+  width:100%;
+}
+
+.task-header {
+  display: inline-block;
+  background-color: skyblue;
+  width:100%;
+}
+
+.complete {
+  background-color: #9E9E9E;
+  border-left: 1px dotted;
+}
+
+.draggable {
+  width: 200px;
+  height: 120px;
+  margin: 5px auto;
+  line-height: 5em;
+}
+
