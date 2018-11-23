@@ -5,32 +5,39 @@ import '../styles/TodoList.css';
 export class TodoApp extends Component {
     state = {
         tasks: [
-            {name:"Learn Angular",category:"wip", bgcolor: ""},
-            {name:"React", category:"wip", bgcolor:""},
-            {name:"Vue", category:"complete", bgcolor:"skyblue"},
-            {name:"Kanban", category:"backlog", bgcolor:"grey"}
+            {name:"Write Novel",category:"wip"},
+            {name:"Clip Coupons", category:"wip"},
+            {name:"Learn React", category:"complete"},
+            {name:"Kanban", category:"backlog"}
           ],
           text: '',
           input_empty: true,
           category: ''
     }
 
-    onChange = (ev) => {
-        
+    focus_backlog: ?HTMLInputElement;
+    focus_wip: ?HTMLInputElement;
+    focus_complete: ?HTMLInputElement;
 
-    this.setState({
-      text: ev.target.value,
-      input_empty: false,
-      category: ev.target.attributes['category'].value
-    });
+    componentDidUpdate(prevProps, prevState) {
+      if (this.state.category) {
+        this['focus_' + this.state.category].focus();
+      }
+    }
 
+    onChange = (ev) => {  
+      console.log('before', ev.target.value)
+      this.setState({
+        text: ev.target.value,
+        input_empty: false,
+        category: ev.target.attributes['category'].value
+      });
+    };
 
-
-
-  };
 
     onUpdate = (ev, origName) => {
-  
+
+      console.log(ev.target.value);
       this.setState({
         text: ev.target.value,
         input_empty: true,
@@ -41,7 +48,7 @@ export class TodoApp extends Component {
 
       let updatedTasks = this.state.tasks.map((task, i) => { 
           if (i === updateIndex) {
-               task.name = this.state.text ;
+               task.name = ev.target.value ;
            }
 
           return task    
@@ -74,76 +81,42 @@ export class TodoApp extends Component {
       if (!this.state.text.trim()) {
         this.setState({input_empty: true});
         return;
-        }
+      }
 
-
-     var nextItems = this.state.tasks.concat([{
-      id: Date.now(),
-      name: this.state.text,
-      category: this.state.category,
-      bgcolor: "skyblue"
-    }]);
+    var nextItems = this.state.tasks.concat([{
+        id: Date.now(),
+        name: this.state.text,
+        category: this.state.category,
+        bgcolor: "skyblue"
+      }]);
     this.setState({tasks: nextItems, text: '', input_empty: true});
     
   };
 
-  handleUpdate = (ev) => {
+  onDragStart = (ev, id) => {
+      console.log('dragstart:',id);
+      ev.dataTransfer.setData("id", id);
+  }
+
+  onDragOver = (ev) => {
       ev.preventDefault();
-      console.log(ev.id)
-      this.setState({input_empty: false});
+  }
 
-      let updateIndex = this.state.tasks[this.state.category].findIndex(task => task.name === ev.target.value);
+  onDrop = (ev, cat) => {
+     let id = ev.dataTransfer.getData("id");
+     
+     let tasks = this.state.tasks.filter((task) => {
+         if (task.name === id) {
+             task.category = cat;
+         }
+         return task;
+     });
 
-      //materials.map((material,index) => console.log(index +" = " + material + " = " + materials[index]));
-
-      let tasksCopy =  this.state.tasks.slice(0);
-
-      let updatedTasks = this.state.tasks.map((task) => { return task });
-      updatedTasks[updateIndex].name = this.state.text;
-
-      if (!this.state.text.trim()) {
-        this.setState({input_empty: false});
-        return;
-        }
-
-
-
-        const nextItems = this.state.tasks[this.state.category][updateIndex] = {
-      id: Date.now(),
-      name: this.state.text,
-      category: this.state.category,
-      bgcolor: "skyblue"
-    };
-    this.setState({tasks: nextItems, text: '', input_empty: true});
-    console.log('targetvalue:', ev.target)
-  };
-
-    onDragStart = (ev, id) => {
-        console.log('dragstart:',id);
-        ev.dataTransfer.setData("id", id);
-    }
-
-    onDragOver = (ev) => {
-        ev.preventDefault();
-    }
-
-    onDrop = (ev, cat) => {
-       let id = ev.dataTransfer.getData("id");
-       
-       let tasks = this.state.tasks.filter((task) => {
-           if (task.name == id) {
-               task.category = cat;
-           }
-           return task;
-       });
-
-       this.setState({
-           ...this.state,
-           tasks
-       });
-
-
-    }
+     this.setState({
+         ...this.state,
+         tasks
+     });
+  }
 
     _handleDoubleClickItem = (event) => {
         console.log(event.target.name)
@@ -165,40 +138,40 @@ export class TodoApp extends Component {
                     className="draggable" 
                     type="text"
                     key={i}
-                    onDoubleClick={(e) => this._handleDoubleClickItem(e)} 
-                     >
-                     
-                        <input disabled type="text" defaultValue={t.name} onChange={(e) => this.onUpdate(e, t.name)} onBlur={ (e) => e.target.disabled = true} category={t.category} />
-                
-                     <div className="redX"  onClick={ (e)=>{ this.removeTask(t.name) }}><img src="redX.svg" /></div>
-                     </div>
+                    onDoubleClick={(e) => this._handleDoubleClickItem(e)} > 
+                  <input disabled type="text" defaultValue={t.name} onChange={(e) => this.onUpdate(e, t.name)} onBlur={ (e) => e.target.disabled = true} category={t.category} />
+                     <div className="redX"  onClick={ (e)=>{ this.removeTask(t.name) }}><img src="redX.svg" alt="Delete Button" /></div>
+                </div>
             );
         });
 
+        let createCompleteTask = (!this.state.input_empty  && this.state.category ==='complete')
+        let createWipTask = (!this.state.input_empty  && this.state.category ==='wip')
+        let createBacklogTask = (!this.state.input_empty  && this.state.category ==='backlog')
+
         return (
             <div className="container-drag">
-
-                <h2 className="header">(Mini)Kanban board</h2>
+              <h2 className="header">(Mini)Kanban board</h2>
             <div className="kanbanBoard">
-                <div className="backlog"
-                    onDragOver={(e)=>this.onDragOver(e)}
-                    onDrop={(e)=>{this.onDrop(e, "backlog")}}>
-                    <div className="list--header">
-                      <div className="list--title">To-Do</div>
-                      <div className="list--add" onClick={(e)=>this.showAdd(e, 'backlog')} ></div>
-                    </div>
-
-                    <div>
-                        <form onSubmit={this.handleSubmit} className={!this.state.input_empty && this.state.category ==='backlog' ? "form-inline add--backlog" : "form-inline"}>
-                          <div className={'form-group'}>
-                            <input onChange={this.onChange} category="backlog" defaultValue='' className='form-control' />
-                            {' '}
-                          </div>
-                        </form>
-                    </div>
-
-                    {tasks.backlog}
+              <div className="backlog"
+                  onDragOver={(e)=>this.onDragOver(e)}
+                  onDrop={(e)=>{this.onDrop(e, "backlog")}}>
+                <div className="list--header">
+                  <div className="list--title">To-Do</div>
+                  <div className="list--add" onClick={(e)=>this.showAdd(e, 'backlog')} ></div>
                 </div>
+
+                <div>
+                    <form onSubmit={this.handleSubmit} className={createBacklogTask ? "form-inline add--backlog" : "form-inline"}>
+                      <div className={'form-group'}>
+                        <input onChange={this.onChange}  category="backlog" id="create_backlog" ref={b => (this.focus_backlog = b)} defaultValue='' className='form-control' autoFocus={createBacklogTask } />
+                        {' '}
+                      </div>
+                    </form>
+                </div>
+
+                  {tasks.backlog}
+              </div>
 
                 <div className="wip"
                     onDragOver={(e)=>this.onDragOver(e)}
@@ -209,9 +182,9 @@ export class TodoApp extends Component {
                     </div>
 
                     <div>
-                        <form onSubmit={this.handleSubmit} className={!this.state.input_empty && this.state.category ==='wip' ? "form-inline add--wip" : "form-inline"}>
+                        <form onSubmit={this.handleSubmit} className={createWipTask ? "form-inline add--wip" : "form-inline"}>
                           <div className={'form-group'}>
-                            <input onChange={this.onChange} category="wip" defaultValue={this.state.text} className='form-control' />
+                            <input onKeyPress={this.onChange} category="wip" id="create_wip" ref={w => (this.focus_wip = w)} defaultValue='' className='form-control' autoFocus={createWipTask} />
                             {' '}
                           </div>
                         </form>
@@ -223,20 +196,20 @@ export class TodoApp extends Component {
                 <div className="complete" 
                     onDragOver={(e)=>this.onDragOver(e)}
                     onDrop={(e)=>this.onDrop(e, "complete")}>
-                     <div className="list--header">
-                      <div className="list--title">Done</div>
-                      <div className="list--add" onClick={(e)=>this.showAdd(e,'complete')} ></div>
-                    </div>
+                 <div className="list--header">
+                  <div className="list--title">Done</div>
+                  <div className="list--add" onClick={(e)=>this.showAdd(e,'complete')} ></div>
+                </div>
 
-                    <div>
-                        <form onSubmit={this.handleSubmit} className={!this.state.input_empty  && this.state.category ==='complete'? "form-inline add--complete" : "form-inline"}>
-                          <div className={'form-group'}>
-                            <input onChange={this.onChange} category="complete" defaultValue={this.state.text} className='form-control' />
-                            {' '}
-                          </div>
-                        </form>
-                    </div>
-                     {tasks.complete}
+                <div>
+                    <form onSubmit={this.handleSubmit} className={createCompleteTask ? "form-inline add--complete" : "form-inline"}>
+                      <div className={'form-group'}>
+                        <input onKeyPress={this.onChange} category="complete" id="create_complete" ref={c =>  (this.focus_complete = c)} defaultValue='' className='form-control' autoFocus={ createCompleteTask } />
+                        {' '}
+                      </div>
+                    </form>
+                </div>
+                 {tasks.complete}
                 </div>
             </div>
 

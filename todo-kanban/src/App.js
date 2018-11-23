@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import './styles/App.css';
-import {TodoApp, TodoList} from './components/TodoList'
+import {TodoApp} from './components/TodoList'
 
 class App extends Component {
   render() {
