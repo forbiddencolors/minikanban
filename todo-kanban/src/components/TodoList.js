@@ -5,10 +5,6 @@ import '../styles/TodoList.css';
 export class TodoApp extends Component {
     state = {
         tasks: [
-            {name:"Learn Angular",category:"wip", bgcolor: ""},
-            {name:"React", category:"wip", bgcolor:""},
-            {name:"Vue", category:"complete", bgcolor:"skyblue"},
-            {name:"Kanban", category:"backlog", bgcolor:"grey"}
           ],
           text: '',
           input_empty: true,
@@ -38,7 +34,7 @@ export class TodoApp extends Component {
     }
 
   removeTask = (name) => {
-    console.log(name)
+
     this.setState({
         tasks: this.state.tasks.filter(el => el.name !== name)
     })
@@ -46,7 +42,6 @@ export class TodoApp extends Component {
   }
 
   showAdd = (e,cat) => {
-    console.log(cat)
     this.setState({
       input_empty: false,
       category: cat,
@@ -74,7 +69,6 @@ export class TodoApp extends Component {
 
 
     onDragStart = (ev, id) => {
-        console.log('dragstart:',id);
         ev.dataTransfer.setData("id", id);
     }
 
@@ -101,7 +95,6 @@ export class TodoApp extends Component {
     }
 
     _handleDoubleClickItem = (event) => {
-        console.log(event.target.name)
         event.target.disabled=false;
     }
 
