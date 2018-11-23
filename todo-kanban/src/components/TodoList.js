@@ -5,13 +5,31 @@ import '../styles/TodoList.css';
 export class TodoApp extends Component {
     state = {
         tasks: [
+            {name:"Learn Angular",category:"wip", bgcolor: ""},
+            {name:"React", category:"wip", bgcolor:""},
+            {name:"Vue", category:"complete", bgcolor:"skyblue"},
+            {name:"Kanban", category:"backlog", bgcolor:"grey"}
           ],
           text: '',
           input_empty: true,
           category: ''
     }
 
-  onChange = (ev, origName) => {
+    onChange = (ev) => {
+        
+
+    this.setState({
+      text: ev.target.value,
+      input_empty: false,
+      category: ev.target.attributes['category'].value
+    });
+
+
+
+
+  };
+
+    onUpdate = (ev, origName) => {
   
       this.setState({
         text: ev.target.value,
@@ -34,7 +52,7 @@ export class TodoApp extends Component {
     }
 
   removeTask = (name) => {
-
+    console.log(name)
     this.setState({
         tasks: this.state.tasks.filter(el => el.name !== name)
     })
@@ -42,6 +60,7 @@ export class TodoApp extends Component {
   }
 
   showAdd = (e,cat) => {
+    console.log(cat)
     this.setState({
       input_empty: false,
       category: cat,
@@ -58,17 +77,49 @@ export class TodoApp extends Component {
         }
 
 
-        var nextItems = this.state.tasks.splice([{
-    
+     var nextItems = this.state.tasks.concat([{
+      id: Date.now(),
       name: this.state.text,
-      
+      category: this.state.category,
+      bgcolor: "skyblue"
     }]);
+    this.setState({tasks: nextItems, text: '', input_empty: true});
+    
+  };
+
+  handleUpdate = (ev) => {
+      ev.preventDefault();
+      console.log(ev.id)
+      this.setState({input_empty: false});
+
+      let updateIndex = this.state.tasks[this.state.category].findIndex(task => task.name === ev.target.value);
+
+      //materials.map((material,index) => console.log(index +" = " + material + " = " + materials[index]));
+
+      let tasksCopy =  this.state.tasks.slice(0);
+
+      let updatedTasks = this.state.tasks.map((task) => { return task });
+      updatedTasks[updateIndex].name = this.state.text;
+
+      if (!this.state.text.trim()) {
+        this.setState({input_empty: false});
+        return;
+        }
+
+
+
+        const nextItems = this.state.tasks[this.state.category][updateIndex] = {
+      id: Date.now(),
+      name: this.state.text,
+      category: this.state.category,
+      bgcolor: "skyblue"
+    };
     this.setState({tasks: nextItems, text: '', input_empty: true});
     console.log('targetvalue:', ev.target)
   };
 
-
     onDragStart = (ev, id) => {
+        console.log('dragstart:',id);
         ev.dataTransfer.setData("id", id);
     }
 
@@ -95,6 +146,7 @@ export class TodoApp extends Component {
     }
 
     _handleDoubleClickItem = (event) => {
+        console.log(event.target.name)
         event.target.disabled=false;
     }
 
@@ -115,9 +167,9 @@ export class TodoApp extends Component {
                     key={i}
                     onDoubleClick={(e) => this._handleDoubleClickItem(e)} 
                      >
-                     <form >
-                        <input disabled type="text" defaultValue={t.name} onChange={(e) => this.onChange(e, t.name)} onBlur={ (e) => e.target.disabled = true} category={t.category} />
-                     </form>
+                     
+                        <input disabled type="text" defaultValue={t.name} onChange={(e) => this.onUpdate(e, t.name)} onBlur={ (e) => e.target.disabled = true} category={t.category} />
+                
                      <div className="redX"  onClick={ (e)=>{ this.removeTask(t.name) }}><img src="redX.svg" /></div>
                      </div>
             );
