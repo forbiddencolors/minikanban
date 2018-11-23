@@ -6,9 +6,6 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <h1>
-          (Mini)Kanban board
-        </h1>
         <div className="kanban--board">
           <div className="kanban-columns todo" >
             <TodoApp />

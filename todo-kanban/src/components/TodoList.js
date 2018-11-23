@@ -15,16 +15,36 @@ export class TodoApp extends Component {
           category: ''
     }
 
-    onChange = (ev) => {
+  onChange = (ev, origName) => {
+  
+      this.setState({
+        text: ev.target.value,
+        input_empty: true,
+        category: ev.target.attributes['category'].value
+      });
 
-        console.log('target',ev.target.value, !ev.target.value.trim(), ev.target.attributes['category'].value)
+      let updateIndex = this.state.tasks.findIndex(task => task.name === origName);
 
+      let updatedTasks = this.state.tasks.map((task, i) => { 
+          if (i === updateIndex) {
+               task.name = this.state.text ;
+           }
+
+          return task    
+        });
+
+
+      this.setState({tasks: updatedTasks})
+    }
+
+  removeTask = (name) => {
+    console.log(name)
     this.setState({
-      text: ev.target.value,
-      input_empty: !ev.target.value.trim(),
-      category: ev.target.attributes['category'].value
-    });
-  };
+        tasks: this.state.tasks.filter(el => el.name !== name)
+    })
+
+  }
+
   showAdd = (e,cat) => {
     console.log(cat)
     this.setState({
@@ -33,6 +53,7 @@ export class TodoApp extends Component {
       text:''
     });
   };
+
   handleSubmit = (ev) => {
       ev.preventDefault();
       console.log(ev)
@@ -41,11 +62,11 @@ export class TodoApp extends Component {
         return;
         }
 
-        var nextItems = this.state.tasks.concat([{
-      id: Date.now(),
+
+        var nextItems = this.state.tasks.splice([{
+    
       name: this.state.text,
-      category: this.state.category,
-      bgcolor: "skyblue"
+      
     }]);
     this.setState({tasks: nextItems, text: '', input_empty: true});
     console.log('targetvalue:', ev.target)
@@ -101,9 +122,10 @@ export class TodoApp extends Component {
                     key={i}
                     onDoubleClick={(e) => this._handleDoubleClickItem(e)} 
                      >
-                     <form onSubmit={this.handleSubmit}>
-                        <input disabled type="text" defaultValue={t.name} onChange={this.onChange} category={t.category} />
+                     <form >
+                        <input disabled type="text" defaultValue={t.name} onChange={(e) => this.onChange(e, t.name)} onBlur={ (e) => e.target.disabled = true} category={t.category} />
                      </form>
+                     <div className="redX"  onClick={ (e)=>{ this.removeTask(t.name) }}><img src="redX.svg" /></div>
                      </div>
             );
         });
