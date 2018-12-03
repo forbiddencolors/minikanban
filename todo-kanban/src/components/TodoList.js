@@ -1,17 +1,13 @@
 import React, { Component } from "react";
 import { InputTask } from "./InputTask";
 import "../styles/TodoList.css";
-import { observable } from "mobx";
+import { observable, action, set } from "mobx";
+import { observer } from "mobx-react";
 import { AsyncTrunk } from "mobx-sync";
 
-export class TodoApp extends Component {
+class TodoApp extends Component {
   state = {
-    tasks: [
-      { name: "Write Novel", category: "wip", id: "0" },
-      { name: "Go Running", category: "wip", id: "1" },
-      { name: "Learn React", category: "complete", id: "2" },
-      { name: "Update Kanban Board", category: "backlog", id: "3" }
-    ],
+    tasks: [],
     text: "",
     input_empty: true,
     category: ""
@@ -30,18 +26,22 @@ export class TodoApp extends Component {
     trunk.init().then(() => {
       // do any staff with loaded store
       console.log("rehydrated", this.kanbanStore);
+      this.kanbanStore.storeLoaded = true;
     }); // this is synchronous
   }
 
-  onChange = ev => {
+  onChange = action(ev => {
     ev.preventDefault();
     console.log("parent change", ev.target.value);
-    this.setState({
-      text: ev.target.value,
-      input_empty: false,
-      category: ev.target.attributes["category"].value
-    });
-  };
+    this.kanbanStore.text = ev.target.value;
+    this.kanbanStore.input_empty = false;
+    this.kanbanStore.category = ev.target.attributes["category"].value;
+    // this.setState({
+    //   text: ev.target.value,
+    //   input_empty: false,
+    //   category: ev.target.attributes["category"].value
+    // });
+  });
 
   onUpdate = (ev, origName) => {
     this.setState({
@@ -71,29 +71,36 @@ export class TodoApp extends Component {
     });
   };
 
-  showAdd = (e, cat) => {
-    this.setState({
+  showAdd = action((e, cat) => {
+    console.log("running");
+    set(this.kanbanStore, {
       input_empty: false,
       category: cat,
       text: ""
     });
-  };
+  });
 
   handleSubmit = ev => {
     ev.preventDefault();
-    if (!this.state.text.trim()) {
-      this.setState({ input_empty: true });
+    if (!this.kanbanStore.text.trim()) {
+      this.kanbanStore.input_empty = true;
+      //this.setState({ input_empty: true });
       return;
     }
 
-    var nextItems = this.state.tasks.concat([
+    var nextItems = this.kanbanStore.tasks.concat([
       {
         id: Date.now(),
-        name: this.state.text,
-        category: this.state.category
+        name: this.kanbanStore.text,
+        category: this.kanbanStore.category
       }
     ]);
-    this.setState({ tasks: nextItems, text: "", input_empty: true });
+    set(this.kanbanStore, {
+      tasks: nextItems,
+      text: "",
+      input_empty: true
+    });
+    //this.kanbanStore({ tasks: nextItems, text: "", input_empty: true });
   };
 
   onDragStart = (ev, id) => {
@@ -133,7 +140,7 @@ export class TodoApp extends Component {
       complete: []
     };
 
-    this.state.tasks.forEach((t, i) => {
+    this.kanbanStore.tasks.forEach((t, i) => {
       tasks[t.category].push(
         <div
           onDragStart={e => this.onDragStart(e, t.name)}
@@ -183,9 +190,9 @@ export class TodoApp extends Component {
             </div>
 
             <InputTask
-              category={this.state.category}
+              category={this.kanbanStore.category}
               taskType="backlog"
-              activate={this.state.input_empty}
+              activate={this.kanbanStore.input_empty}
               onChange={this.onChange}
               onSubmit={this.handleSubmit}
             />
@@ -209,9 +216,9 @@ export class TodoApp extends Component {
             </div>
 
             <InputTask
-              category={this.state.category}
+              category={this.kanbanStore.category}
               taskType="wip"
-              activate={this.state.input_empty}
+              activate={this.kanbanStore.input_empty}
               onChange={this.onChange}
               onSubmit={this.handleSubmit}
             />
@@ -233,9 +240,9 @@ export class TodoApp extends Component {
             </div>
 
             <InputTask
-              category={this.state.category}
+              category={this.kanbanStore.category}
               taskType="complete"
-              activate={this.state.input_empty}
+              activate={this.kanbanStore.input_empty}
               onChange={this.onChange}
               onSubmit={this.handleSubmit}
             />
@@ -247,3 +254,5 @@ export class TodoApp extends Component {
     );
   }
 }
+
+export default observer(TodoApp);
