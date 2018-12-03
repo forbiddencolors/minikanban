@@ -1,224 +1,254 @@
-import React, { Component } from 'react';
-import '../styles/TodoList.css';
-
+import React, { Component } from "react";
+import { InputTask } from "./InputTask";
+import "../styles/TodoList.css";
+//import { observable } from "mobx";
+//import { AsyncTrunk } from "mobx-sync/lib/sync";
 
 export class TodoApp extends Component {
-    state = {
-        tasks: [
-            {name:"Write Novel",category:"wip"},
-            {name:"Clip Coupons", category:"wip"},
-            {name:"Learn React", category:"complete"},
-            {name:"Kanban", category:"backlog"}
-          ],
-          text: '',
-          input_empty: true,
-          category: ''
-    }
+  state = {
+    tasks: [
+      { name: "Write Novel", category: "wip", id: "0" },
+      { name: "Go Running", category: "wip", id: "1" },
+      { name: "Learn React", category: "complete", id: "2" },
+      { name: "Update Kanban Board", category: "backlog", id: "3" }
+    ],
+    text: "",
+    input_empty: true,
+    category: ""
+  };
 
-    focus_backlog: ?HTMLInputElement;
-    focus_wip: ?HTMLInputElement;
-    focus_complete: ?HTMLInputElement;
+  // // init your stories
+  // kanbanStore = observable({
+  //   tasks: [
+  //     { name: "Write Novel", category: "wip", id: "0" },
+  //     { name: "Go Running", category: "wip", id: "1" },
+  //     { name: "Learn React", category: "complete", id: "2" },
+  //     { name: "Update Kanban Board", category: "backlog", id: "3" }
+  //   ],
+  //   text: "",
+  //   input_empty: true,
+  //   category: ""
+  // });
 
-    componentDidUpdate(prevProps, prevState) {
-      if (this.state.category) {
-        this['focus_' + this.state.category].focus();
-      }
-    }
+  // componentDidUpdate(prevProps, prevState) {
+  //   const trunk = new AsyncTrunk(this.kanbanStore);
+  //   trunk.init().then(() => {
+  //     // do any staff with loaded store
+  //     console.log("rehydrated", this.kanbanStore);
+  //   }); // this is synchronous
+  // }
 
-    onChange = (ev) => {  
-      console.log('before', ev.target.value)
-      this.setState({
-        text: ev.target.value,
-        input_empty: false,
-        category: ev.target.attributes['category'].value
-      });
-    };
-
-
-    onUpdate = (ev, origName) => {
-
-      console.log(ev.target.value);
-      this.setState({
-        text: ev.target.value,
-        input_empty: true,
-        category: ev.target.attributes['category'].value
-      });
-
-      let updateIndex = this.state.tasks.findIndex(task => task.name === origName);
-
-      let updatedTasks = this.state.tasks.map((task, i) => { 
-          if (i === updateIndex) {
-               task.name = ev.target.value ;
-           }
-
-          return task    
-        });
-
-
-      this.setState({tasks: updatedTasks})
-    }
-
-  removeTask = (name) => {
-    console.log(name)
+  onChange = ev => {
+    ev.preventDefault();
+    console.log("parent change", ev.target.value);
     this.setState({
-        tasks: this.state.tasks.filter(el => el.name !== name)
-    })
-
-  }
-
-  showAdd = (e,cat) => {
-    console.log(cat)
-    this.setState({
+      text: ev.target.value,
       input_empty: false,
-      category: cat,
-      text:''
+      category: ev.target.attributes["category"].value
     });
   };
 
-  handleSubmit = (ev) => {
-      ev.preventDefault();
-      console.log(ev)
-      if (!this.state.text.trim()) {
-        this.setState({input_empty: true});
-        return;
+  onUpdate = (ev, origName) => {
+    this.setState({
+      text: ev.target.value,
+      input_empty: true,
+      category: ev.target.attributes["category"].value
+    });
+
+    let updateIndex = this.state.tasks.findIndex(
+      task => task.name === origName
+    );
+
+    let updatedTasks = this.state.tasks.map((task, i) => {
+      if (i === updateIndex) {
+        task.name = ev.target.value;
       }
 
-    var nextItems = this.state.tasks.concat([{
+      return task;
+    });
+
+    this.setState({ tasks: updatedTasks });
+  };
+
+  removeTask = name => {
+    this.setState({
+      tasks: this.state.tasks.filter(el => el.name !== name)
+    });
+  };
+
+  showAdd = (e, cat) => {
+    this.setState({
+      input_empty: false,
+      category: cat,
+      text: ""
+    });
+  };
+
+  handleSubmit = ev => {
+    ev.preventDefault();
+    if (!this.state.text.trim()) {
+      this.setState({ input_empty: true });
+      return;
+    }
+
+    var nextItems = this.state.tasks.concat([
+      {
         id: Date.now(),
         name: this.state.text,
-        category: this.state.category,
-        bgcolor: "skyblue"
-      }]);
-    this.setState({tasks: nextItems, text: '', input_empty: true});
-    
+        category: this.state.category
+      }
+    ]);
+    this.setState({ tasks: nextItems, text: "", input_empty: true });
   };
 
   onDragStart = (ev, id) => {
-      console.log('dragstart:',id);
-      ev.dataTransfer.setData("id", id);
-  }
+    console.log("dragstart:", id);
+    ev.dataTransfer.setData("id", id);
+  };
 
-  onDragOver = (ev) => {
-      ev.preventDefault();
-  }
+  onDragOver = ev => {
+    ev.preventDefault();
+  };
 
   onDrop = (ev, cat) => {
-     let id = ev.dataTransfer.getData("id");
-     
-     let tasks = this.state.tasks.filter((task) => {
-         if (task.name === id) {
-             task.category = cat;
-         }
-         return task;
-     });
+    let id = ev.dataTransfer.getData("id");
 
-     this.setState({
-         ...this.state,
-         tasks
-     });
+    let tasks = this.state.tasks.filter(task => {
+      if (task.name === id) {
+        task.category = cat;
+      }
+      return task;
+    });
+
+    this.setState({
+      ...this.state,
+      tasks
+    });
+  };
+
+  _handleDoubleClickItem = event => {
+    console.log(event.target.name);
+    event.target.disabled = false;
+  };
+
+  render() {
+    var tasks = {
+      backlog: [],
+      wip: [],
+      complete: []
+    };
+
+    this.state.tasks.forEach((t, i) => {
+      tasks[t.category].push(
+        <div
+          onDragStart={e => this.onDragStart(e, t.name)}
+          draggable
+          className="draggable"
+          type="text"
+          key={i}
+          onDoubleClick={e => this._handleDoubleClickItem(e)}
+        >
+          <input
+            disabled
+            type="text"
+            defaultValue={t.name}
+            onChange={e => this.onUpdate(e, t.name)}
+            onBlur={e => (e.target.disabled = true)}
+            category={t.category}
+          />
+          <div
+            className="redX"
+            onClick={e => {
+              this.removeTask(t.name);
+            }}
+          >
+            <img src="redX.svg" alt="Delete Button" />
+          </div>
+        </div>
+      );
+    });
+
+    return (
+      <div className="container-drag">
+        <h2 className="header">(Mini)Kanban board</h2>
+        <div className="kanbanBoard">
+          <div
+            className="backlog"
+            onDragOver={e => this.onDragOver(e)}
+            onDrop={e => {
+              this.onDrop(e, "backlog");
+            }}
+          >
+            <div className="list--header">
+              <div className="list--title">To-Do</div>
+              <div
+                className="list--add"
+                onClick={e => this.showAdd(e, "backlog")}
+              />
+            </div>
+
+            <InputTask
+              category={this.state.category}
+              taskType="backlog"
+              activate={this.state.input_empty}
+              onChange={this.onChange}
+              onSubmit={this.handleSubmit}
+            />
+
+            {tasks.backlog}
+          </div>
+
+          <div
+            className="wip"
+            onDragOver={e => this.onDragOver(e)}
+            onDrop={e => {
+              this.onDrop(e, "wip");
+            }}
+          >
+            <div className="list--header">
+              <div className="list--title">In-Progress</div>
+              <div
+                className="list--add"
+                onClick={e => this.showAdd(e, "wip")}
+              />
+            </div>
+
+            <InputTask
+              category={this.state.category}
+              taskType="wip"
+              activate={this.state.input_empty}
+              onChange={this.onChange}
+              onSubmit={this.handleSubmit}
+            />
+
+            {tasks.wip}
+          </div>
+
+          <div
+            className="complete"
+            onDragOver={e => this.onDragOver(e)}
+            onDrop={e => this.onDrop(e, "complete")}
+          >
+            <div className="list--header">
+              <div className="list--title">Done</div>
+              <div
+                className="list--add"
+                onClick={e => this.showAdd(e, "complete")}
+              />
+            </div>
+
+            <InputTask
+              category={this.state.category}
+              taskType="complete"
+              activate={this.state.input_empty}
+              onChange={this.onChange}
+              onSubmit={this.handleSubmit}
+            />
+
+            {tasks.complete}
+          </div>
+        </div>
+      </div>
+    );
   }
-
-    _handleDoubleClickItem = (event) => {
-        console.log(event.target.name)
-        event.target.disabled=false;
-    }
-
-    render() {
-        var tasks = {
-            backlog: [],
-            wip: [],
-            complete: []
-        }
-
-        this.state.tasks.forEach ((t,i ) => {
-            tasks[t.category].push(
-
-                <div onDragStart = {(e) => this.onDragStart(e, t.name)}
-                    draggable
-                    className="draggable" 
-                    type="text"
-                    key={i}
-                    onDoubleClick={(e) => this._handleDoubleClickItem(e)} > 
-                  <input disabled type="text" defaultValue={t.name} onChange={(e) => this.onUpdate(e, t.name)} onBlur={ (e) => e.target.disabled = true} category={t.category} />
-                     <div className="redX"  onClick={ (e)=>{ this.removeTask(t.name) }}><img src="redX.svg" alt="Delete Button" /></div>
-                </div>
-            );
-        });
-
-        let createCompleteTask = (!this.state.input_empty  && this.state.category ==='complete')
-        let createWipTask = (!this.state.input_empty  && this.state.category ==='wip')
-        let createBacklogTask = (!this.state.input_empty  && this.state.category ==='backlog')
-
-        return (
-            <div className="container-drag">
-              <h2 className="header">(Mini)Kanban board</h2>
-            <div className="kanbanBoard">
-              <div className="backlog"
-                  onDragOver={(e)=>this.onDragOver(e)}
-                  onDrop={(e)=>{this.onDrop(e, "backlog")}}>
-                <div className="list--header">
-                  <div className="list--title">To-Do</div>
-                  <div className="list--add" onClick={(e)=>this.showAdd(e, 'backlog')} ></div>
-                </div>
-
-                <div>
-                    <form onSubmit={this.handleSubmit} className={createBacklogTask ? "form-inline add--backlog" : "form-inline"}>
-                      <div className={'form-group'}>
-                        <input onChange={this.onChange}  category="backlog" id="create_backlog" ref={b => (this.focus_backlog = b)} defaultValue='' className='form-control' autoFocus={createBacklogTask } />
-                        {' '}
-                      </div>
-                    </form>
-                </div>
-
-                  {tasks.backlog}
-              </div>
-
-                <div className="wip"
-                    onDragOver={(e)=>this.onDragOver(e)}
-                    onDrop={(e)=>{this.onDrop(e, "wip")}}>
-                    <div className="list--header">
-                      <div className="list--title">In-Progress</div>
-                      <div className="list--add" onClick={(e)=>this.showAdd(e, 'wip')} ></div>
-                    </div>
-
-                    <div>
-                        <form onSubmit={this.handleSubmit} className={createWipTask ? "form-inline add--wip" : "form-inline"}>
-                          <div className={'form-group'}>
-                            <input onKeyPress={this.onChange} category="wip" id="create_wip" ref={w => (this.focus_wip = w)} defaultValue='' className='form-control' autoFocus={createWipTask} />
-                            {' '}
-                          </div>
-                        </form>
-                    </div>
-
-                    {tasks.wip}
-                </div>
-                
-                <div className="complete" 
-                    onDragOver={(e)=>this.onDragOver(e)}
-                    onDrop={(e)=>this.onDrop(e, "complete")}>
-                 <div className="list--header">
-                  <div className="list--title">Done</div>
-                  <div className="list--add" onClick={(e)=>this.showAdd(e,'complete')} ></div>
-                </div>
-
-                <div>
-                    <form onSubmit={this.handleSubmit} className={createCompleteTask ? "form-inline add--complete" : "form-inline"}>
-                      <div className={'form-group'}>
-                        <input onKeyPress={this.onChange} category="complete" id="create_complete" ref={c =>  (this.focus_complete = c)} defaultValue='' className='form-control' autoFocus={ createCompleteTask } />
-                        {' '}
-                      </div>
-                    </form>
-                </div>
-                 {tasks.complete}
-                </div>
-            </div>
-
-
-            </div>
-        );
-    }
 }
-
-
-
-
