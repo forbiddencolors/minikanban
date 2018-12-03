@@ -28,6 +28,7 @@ export class InputTask extends Component {
     if (typeof this.props.onSubmit === "function") {
       this.props.onSubmit(e);
     }
+    this["focus_" + this.props.category].value = "";
   };
 
   render() {
