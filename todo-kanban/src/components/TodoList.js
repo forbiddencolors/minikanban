@@ -4,28 +4,17 @@ import "../styles/TodoList.css";
 import { observable, action, set } from "mobx";
 import { observer } from "mobx-react";
 import { AsyncTrunk } from "mobx-sync";
+import KanbanStore from "../stores/KanbanStore";
 
 class TodoApp extends Component {
-  state = {
-    tasks: [],
-    text: "",
-    input_empty: true,
-    category: ""
-  };
-
   // init your stories
-  kanbanStore = observable({
-    tasks: [],
-    text: "",
-    input_empty: true,
-    category: ""
-  });
+  kanbanStore = observer(KanbanStore);
 
   componentDidMount() {
     const trunk = new AsyncTrunk(this.kanbanStore);
     trunk.init().then(() => {
       // do any staff with loaded store
-      console.log("rehydrated", this.kanbanStore);
+      console.log("rehydrated", this.kanbanStore.tasks);
       this.kanbanStore.storeLoaded = true;
     }); // this is synchronous
   }
@@ -34,7 +23,7 @@ class TodoApp extends Component {
     ev.preventDefault();
     console.log("parent change", ev.target.value);
     this.kanbanStore.text = ev.target.value;
-    this.kanbanStore.input_empty = false;
+    this.kanbanStore.input_hide = false;
     this.kanbanStore.category = ev.target.attributes["category"].value;
     // this.setState({
     //   text: ev.target.value,
@@ -44,17 +33,17 @@ class TodoApp extends Component {
   });
 
   onUpdate = (ev, origName) => {
-    this.setState({
+    set(this.kanbanStore, {
       text: ev.target.value,
-      input_empty: true,
+      input_hide: true,
       category: ev.target.attributes["category"].value
     });
 
-    let updateIndex = this.state.tasks.findIndex(
+    let updateIndex = this.kanbanStore.tasks.findIndex(
       task => task.name === origName
     );
 
-    let updatedTasks = this.state.tasks.map((task, i) => {
+    let updatedTasks = this.kanbanStore.tasks.map((task, i) => {
       if (i === updateIndex) {
         task.name = ev.target.value;
       }
@@ -65,26 +54,25 @@ class TodoApp extends Component {
     this.setState({ tasks: updatedTasks });
   };
 
-  removeTask = name => {
-    this.setState({
-      tasks: this.state.tasks.filter(el => el.name !== name)
-    });
-  };
+  // removeTask = action(name => {
+  //   this.set(this.kanbanStore, {
+  //     tasks: this.kanbanStore.tasks.filter(el => el.name !== name)
+  //   });
+  // });
 
-  showAdd = action((e, cat) => {
-    console.log("running");
-    set(this.kanbanStore, {
-      input_empty: false,
-      category: cat,
-      text: ""
-    });
-  });
+  // showAdd = action((e, cat) => {
+  //   console.log("running");
+  //   set(this.kanbanStore, {
+  //     input_hide: false,
+  //     category: cat,
+  //     text: ""
+  //   });
+  // });
 
   handleSubmit = ev => {
     ev.preventDefault();
     if (!this.kanbanStore.text.trim()) {
-      this.kanbanStore.input_empty = true;
-      //this.setState({ input_empty: true });
+      this.kanbanStore.input_hide = true;
       return;
     }
 
@@ -98,9 +86,8 @@ class TodoApp extends Component {
     set(this.kanbanStore, {
       tasks: nextItems,
       text: "",
-      input_empty: true
+      input_hide: true
     });
-    //this.kanbanStore({ tasks: nextItems, text: "", input_empty: true });
   };
 
   onDragStart = (ev, id) => {
@@ -115,15 +102,15 @@ class TodoApp extends Component {
   onDrop = (ev, cat) => {
     let id = ev.dataTransfer.getData("id");
 
-    let tasks = this.state.tasks.filter(task => {
+    let tasks = this.kanbanStore.tasks.filter(task => {
       if (task.name === id) {
         task.category = cat;
       }
       return task;
     });
 
-    this.setState({
-      ...this.state,
+    set(this.kanbanStore, {
+      ...this.kanbanStore,
       tasks
     });
   };
@@ -134,41 +121,43 @@ class TodoApp extends Component {
   };
 
   render() {
+    console.log("whats in the store", this.kanbanStore.tasks);
     var tasks = {
       backlog: [],
       wip: [],
       complete: []
     };
-
-    this.kanbanStore.tasks.forEach((t, i) => {
-      tasks[t.category].push(
-        <div
-          onDragStart={e => this.onDragStart(e, t.name)}
-          draggable
-          className="draggable"
-          type="text"
-          key={i}
-          onDoubleClick={e => this._handleDoubleClickItem(e)}
-        >
-          <input
-            disabled
-            type="text"
-            defaultValue={t.name}
-            onChange={e => this.onUpdate(e, t.name)}
-            onBlur={e => (e.target.disabled = true)}
-            category={t.category}
-          />
+    if (this.kanbanStore.tasks) {
+      this.kanbanStore.tasks.forEach((t, i) => {
+        tasks[t.category].push(
           <div
-            className="redX"
-            onClick={e => {
-              this.removeTask(t.name);
-            }}
+            onDragStart={e => this.onDragStart(e, t.name)}
+            draggable
+            className="draggable"
+            type="text"
+            key={i}
+            onDoubleClick={e => this._handleDoubleClickItem(e)}
           >
-            <img src="redX.svg" alt="Delete Button" />
+            <input
+              disabled
+              type="text"
+              defaultValue={t.name}
+              onChange={e => this.onUpdate(e, t.name)}
+              onBlur={e => (e.target.disabled = true)}
+              category={t.category}
+            />
+            <div
+              className="redX"
+              onClick={e => {
+                this.kanbanStore.removeTask(t.name);
+              }}
+            >
+              <img src="redX.svg" alt="Delete Button" />
+            </div>
           </div>
-        </div>
-      );
-    });
+        );
+      });
+    }
 
     return (
       <div className="container-drag">
@@ -185,14 +174,14 @@ class TodoApp extends Component {
               <div className="list--title">To-Do</div>
               <div
                 className="list--add"
-                onClick={e => this.showAdd(e, "backlog")}
+                onClick={e => this.kanbanStore.activateInput(e, "backlog")}
               />
             </div>
 
             <InputTask
               category={this.kanbanStore.category}
               taskType="backlog"
-              activate={this.kanbanStore.input_empty}
+              activate={this.kanbanStore.input_hide}
               onChange={this.onChange}
               onSubmit={this.handleSubmit}
             />
@@ -211,14 +200,14 @@ class TodoApp extends Component {
               <div className="list--title">In-Progress</div>
               <div
                 className="list--add"
-                onClick={e => this.showAdd(e, "wip")}
+                onClick={e => this.kanbanStore.activateInput(e, "wip")}
               />
             </div>
 
             <InputTask
               category={this.kanbanStore.category}
               taskType="wip"
-              activate={this.kanbanStore.input_empty}
+              activate={this.kanbanStore.input_hide}
               onChange={this.onChange}
               onSubmit={this.handleSubmit}
             />
@@ -235,14 +224,14 @@ class TodoApp extends Component {
               <div className="list--title">Done</div>
               <div
                 className="list--add"
-                onClick={e => this.showAdd(e, "complete")}
+                onClick={e => this.kanbanStore.activateInput(e, "complete")}
               />
             </div>
 
             <InputTask
               category={this.kanbanStore.category}
               taskType="complete"
-              activate={this.kanbanStore.input_empty}
+              activate={this.kanbanStore.input_hide}
               onChange={this.onChange}
               onSubmit={this.handleSubmit}
             />
