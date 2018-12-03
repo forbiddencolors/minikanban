@@ -1,8 +1,8 @@
 import React, { Component } from "react";
 import { InputTask } from "./InputTask";
 import "../styles/TodoList.css";
-//import { observable } from "mobx";
-//import { AsyncTrunk } from "mobx-sync/lib/sync";
+import { observable } from "mobx";
+import { AsyncTrunk } from "mobx-sync";
 
 export class TodoApp extends Component {
   state = {
@@ -17,26 +17,21 @@ export class TodoApp extends Component {
     category: ""
   };
 
-  // // init your stories
-  // kanbanStore = observable({
-  //   tasks: [
-  //     { name: "Write Novel", category: "wip", id: "0" },
-  //     { name: "Go Running", category: "wip", id: "1" },
-  //     { name: "Learn React", category: "complete", id: "2" },
-  //     { name: "Update Kanban Board", category: "backlog", id: "3" }
-  //   ],
-  //   text: "",
-  //   input_empty: true,
-  //   category: ""
-  // });
+  // init your stories
+  kanbanStore = observable({
+    tasks: [],
+    text: "",
+    input_empty: true,
+    category: ""
+  });
 
-  // componentDidUpdate(prevProps, prevState) {
-  //   const trunk = new AsyncTrunk(this.kanbanStore);
-  //   trunk.init().then(() => {
-  //     // do any staff with loaded store
-  //     console.log("rehydrated", this.kanbanStore);
-  //   }); // this is synchronous
-  // }
+  componentDidMount() {
+    const trunk = new AsyncTrunk(this.kanbanStore);
+    trunk.init().then(() => {
+      // do any staff with loaded store
+      console.log("rehydrated", this.kanbanStore);
+    }); // this is synchronous
+  }
 
   onChange = ev => {
     ev.preventDefault();
