@@ -16,7 +16,6 @@ export class InputTask extends Component {
 
   changeHandler = e => {
     e.preventDefault();
-    console.log("calling change", e);
     if (typeof this.props.onChange === "function") {
       this.props.onChange(e);
     }
@@ -24,7 +23,6 @@ export class InputTask extends Component {
 
   submitHandler = e => {
     e.preventDefault();
-    console.log("calling submit", e);
     if (typeof this.props.onSubmit === "function") {
       this.props.onSubmit(e);
     }

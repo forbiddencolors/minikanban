@@ -4,94 +4,34 @@ import "../styles/TodoList.css";
 import { observable, action, set } from "mobx";
 import { observer } from "mobx-react";
 import { AsyncTrunk } from "mobx-sync";
-import KanbanStore from "../stores/KanbanStore";
+import kanbanStore from "../stores/KanbanStore";
 
 class TodoApp extends Component {
-  // init your stories
-  kanbanStore = observer(KanbanStore);
+  kanbanStore = observer(kanbanStore);
 
   componentDidMount() {
     const trunk = new AsyncTrunk(this.kanbanStore);
     trunk.init().then(() => {
-      // do any staff with loaded store
       console.log("rehydrated", this.kanbanStore.tasks);
       this.kanbanStore.storeLoaded = true;
-    }); // this is synchronous
+    });
   }
 
-  onChange = action(ev => {
+  onChange = ev => {
     ev.preventDefault();
-    console.log("parent change", ev.target.value);
-    this.kanbanStore.text = ev.target.value;
-    this.kanbanStore.input_hide = false;
-    this.kanbanStore.category = ev.target.attributes["category"].value;
-    // this.setState({
-    //   text: ev.target.value,
-    //   input_empty: false,
-    //   category: ev.target.attributes["category"].value
-    // });
-  });
-
-  onUpdate = (ev, origName) => {
-    set(this.kanbanStore, {
-      text: ev.target.value,
-      input_hide: true,
-      category: ev.target.attributes["category"].value
-    });
-
-    let updateIndex = this.kanbanStore.tasks.findIndex(
-      task => task.name === origName
-    );
-
-    let updatedTasks = this.kanbanStore.tasks.map((task, i) => {
-      if (i === updateIndex) {
-        task.name = ev.target.value;
-      }
-
-      return task;
-    });
-
-    this.setState({ tasks: updatedTasks });
+    this.kanbanStore.prepareCard(ev);
   };
 
-  // removeTask = action(name => {
-  //   this.set(this.kanbanStore, {
-  //     tasks: this.kanbanStore.tasks.filter(el => el.name !== name)
-  //   });
-  // });
-
-  // showAdd = action((e, cat) => {
-  //   console.log("running");
-  //   set(this.kanbanStore, {
-  //     input_hide: false,
-  //     category: cat,
-  //     text: ""
-  //   });
-  // });
+  onUpdate = (ev, origName) => {
+    this.kanbanStore.editCard(ev, origName);
+  };
 
   handleSubmit = ev => {
     ev.preventDefault();
-    if (!this.kanbanStore.text.trim()) {
-      this.kanbanStore.input_hide = true;
-      return;
-    }
-
-    var nextItems = this.kanbanStore.tasks.concat([
-      {
-        id: Date.now(),
-        name: this.kanbanStore.text,
-        category: this.kanbanStore.category
-      }
-    ]);
-    set(this.kanbanStore, {
-      tasks: nextItems,
-      text: "",
-      input_hide: true
-    });
+    this.kanbanStore.createCard(ev);
   };
 
   onDragStart = (ev, id) => {
-    console.log("dragstart:", id);
     ev.dataTransfer.setData("id", id);
   };
 
@@ -100,19 +40,7 @@ class TodoApp extends Component {
   };
 
   onDrop = (ev, cat) => {
-    let id = ev.dataTransfer.getData("id");
-
-    let tasks = this.kanbanStore.tasks.filter(task => {
-      if (task.name === id) {
-        task.category = cat;
-      }
-      return task;
-    });
-
-    set(this.kanbanStore, {
-      ...this.kanbanStore,
-      tasks
-    });
+    this.kanbanStore.moveCard(ev, cat);
   };
 
   _handleDoubleClickItem = event => {
