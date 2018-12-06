@@ -20,7 +20,7 @@ Manage tasks using a simplified workflow to track their progress. Main functiona
 
 Some nice to have features:
 
-- Persist tasks between browser refreshes
+- Persist tasks between browser refreshes (done!!)
 
 - CSS animation when saving task description
 
@@ -29,5 +29,3 @@ Some nice to have features:
 - Show the date and time of the last task update
 
 - Search functionality
-
-To deliver you test, push your code to this repository and let the person that send you the test know you're done.
